@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>КУЗНЯ — инструмент промпт-инженера</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #1a1f1c;
+      --ink-soft: #3d4740;
+      --mist: #e8ede9;
+      --paper: #f4f7f5;
+      --signal: #e85d04;
+      --signal-deep: #c44d03;
+      --teal: #0d7377;
+      --line: rgba(26, 31, 28, 0.12);
+      --glow: rgba(232, 93, 4, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: "Outfit", sans-serif;
+      color: var(--ink);
+      background: var(--paper);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* Atmosphere */
+    .atmosphere {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(13, 115, 119, 0.14), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(232, 93, 4, 0.1), transparent 50%),
+        linear-gradient(165deg, #eef2ef 0%, #e2e8e4 45%, #d8e0db 100%);
+    }
+
+    .atmosphere::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(26, 31, 28, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(26, 31, 28, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+      position: relative;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .brand {
+      font-family: "Archivo", sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .brand span {
+      color: var(--signal);
+    }
+
+    .nav-link {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--ink-soft);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--ink);
+      border-color: var(--ink);
+    }
+
+    .hero-stage {
+      display: grid;
+      align-items: end;
+      padding: 0 1.5rem 3.5rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      position: relative;
+    }
+
+    .hero-copy {
+      max-width: 34rem;
+      position: relative;
+      z-index: 2;
+      animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .hero-brand {
+      font-family: "Archivo", sans-serif;
+      font-weight: 800;
+      font-size: clamp(3.5rem, 12vw, 7.5rem);
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .hero-brand em {
+      font-style: normal;
+      color: var(--signal);
+    }
+
+    .hero-title {
+      font-family: "Archivo", sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.25rem, 3vw, 1.75rem);
+      line-height: 1.25;
+      margin-bottom: 0.75rem;
+      max-width: 18ch;
+    }
+
+    .hero-lead {
+      color: var(--ink-soft);
+      font-size: 1.05rem;
+      margin-bottom: 1.75rem;
+      max-width: 32ch;
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-family: "Outfit", sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.85rem 1.35rem;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .btn-primary:hover {
+      background: #000;
+      box-shadow: 0 8px 28px rgba(26, 31, 28, 0.2);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1.5px solid var(--ink);
+    }
+
+    .btn-ghost:hover {
+      background: rgba(26, 31, 28, 0.05);
+    }
+
+    .btn-signal {
+      background: var(--signal);
+      color: #fff;
+    }
+
+    .btn-signal:hover {
+      background: var(--signal-deep);
+      box-shadow: 0 8px 28px var(--glow);
+    }
+
+    /* Dominant visual plane */
+    .hero-visual {
+      position: absolute;
+      right: -8%;
+      bottom: 8%;
+      width: min(58vw, 640px);
+      aspect-ratio: 1;
+      z-index: 1;
+      animation: drift 1.2s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+      pointer-events: none;
+    }
+
+    .hero-visual svg {
+      width: 100%;
+      height: 100%;
+      filter: drop-shadow(0 24px 48px rgba(13, 115, 119, 0.2));
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(28px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes drift {
+      from {
+        opacity: 0;
+        transform: translate(40px, 20px) scale(0.96);
+      }
+      to {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+      }
+    }
+
+    @keyframes pulse-ring {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.04); }
+    }
+
+    .ring-pulse {
+      transform-origin: center;
+      animation: pulse-ring 4.5s ease-in-out infinite;
+    }
+
+    /* Workshop */
+    .workshop {
+      padding: 5rem 1.5rem 6rem;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .section-head {
+      margin-bottom: 2rem;
+      animation: rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .section-head h2 {
+      font-family: "Archivo", sans-serif;
+      font-weight: 800;
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-head p {
+      color: var(--ink-soft);
+      max-width: 42ch;
+    }
+
+    .builder {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .field label {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      font-family: "Outfit", sans-serif;
+      font-size: 1rem;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.72);
+      border: 1.5px solid var(--line);
+      padding: 0.85rem 1rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      backdrop-filter: blur(8px);
+    }
+
+    .field textarea {
+      min-height: 96px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.15);
+    }
+
+    .grid-2 {
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 720px) {
+      .grid-2 {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero-stage {
+        padding-bottom: 4.5rem;
+      }
+    }
+
+    .templates {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .chip {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      padding: 0.45rem 0.75rem;
+      background: transparent;
+      border: 1.5px solid var(--line);
+      color: var(--ink-soft);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s, background 0.2s;
+    }
+
+    .chip:hover,
+    .chip.active {
+      border-color: var(--signal);
+      color: var(--ink);
+      background: rgba(232, 93, 4, 0.08);
+    }
+
+    .output-block {
+      margin-top: 0.5rem;
+      border-top: 1.5px solid var(--line);
+      padding-top: 1.5rem;
+    }
+
+    .output-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .output-label {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .output {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 0.88rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      background: var(--ink);
+      color: #d4ddd6;
+      padding: 1.25rem 1.35rem;
+      min-height: 180px;
+      border: none;
+      width: 100%;
+      resize: vertical;
+    }
+
+    .output:focus {
+      outline: 2px solid var(--signal);
+      outline-offset: 2px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: var(--ink);
+      color: var(--paper);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.75rem 1.25rem;
+      z-index: 50;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    footer {
+      padding: 2rem 1.5rem 3rem;
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--ink-soft);
+    }
+
+    footer strong {
+      font-family: "Archivo", sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--ink);
+    }
+
+    @media (max-width: 860px) {
+      .hero-visual {
+        opacity: 0.35;
+        width: min(90vw, 420px);
+        right: -20%;
+        bottom: 20%;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .hero-visual {
+        display: none;
+      }
+
+      .hero-stage {
+        align-items: center;
+        padding-bottom: 4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true"></div>
+
+  <header class="hero">
+    <nav class="nav">
+      <div class="brand">Ку<span>зня</span></div>
+      <a class="nav-link" href="#workshop">К редактору ↓</a>
+    </nav>
+
+    <div class="hero-stage">
+      <div class="hero-copy">
+        <p class="hero-brand">Ку<em>зня</em></p>
+        <h1 class="hero-title">Собирайте точные промпты без хаоса</h1>
+        <p class="hero-lead">Рабочее место промпт-инженера: роль, задача, ограничения — и готовый текст.</p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#workshop">Открыть мастерскую</a>
+          <a class="btn btn-ghost" href="#workshop" id="try-sample">Вставить пример</a>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <svg viewBox="0 0 640 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle class="ring-pulse" cx="320" cy="320" r="210" stroke="#0d7377" stroke-width="1.5" opacity="0.4" />
+          <circle cx="320" cy="320" r="160" stroke="#1a1f1c" stroke-width="2" opacity="0.15" />
+          <path d="M180 420 L320 160 L460 420 Z" stroke="#1a1f1c" stroke-width="2.5" fill="rgba(232,93,4,0.12)" />
+          <path d="M240 380 L320 230 L400 380 Z" stroke="#0d7377" stroke-width="2" fill="rgba(13,115,119,0.18)" />
+          <circle cx="320" cy="320" r="18" fill="#e85d04" />
+          <circle cx="320" cy="160" r="8" fill="#1a1f1c" />
+          <circle cx="180" cy="420" r="8" fill="#1a1f1c" />
+          <circle cx="460" cy="420" r="8" fill="#1a1f1c" />
+          <line x1="320" y1="178" x2="320" y2="302" stroke="#e85d04" stroke-width="2" stroke-dasharray="6 8" />
+          <rect x="268" y="455" width="104" height="28" rx="2" fill="#1a1f1c" opacity="0.85" />
+          <text x="320" y="474" text-anchor="middle" fill="#f4f7f5" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="2">PROMPT</text>
+        </svg>
+      </div>
+    </div>
+  </header>
+
+  <main class="workshop" id="workshop">
+    <div class="section-head">
+      <h2>Мастерская</h2>
+      <p>Заполните блоки — система соберёт структурированный промпт. Можно править результат вручную.</p>
+    </div>
+
+    <div class="builder">
+      <div class="field">
+        <label>Шаблоны</label>
+        <div class="templates" id="templates" role="group" aria-label="Шаблоны промптов"></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label for="role">Роль</label>
+          <input id="role" type="text" placeholder="Например: senior prompt engineer" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="tone">Тон</label>
+          <select id="tone">
+            <option value="нейтральный, точный">Нейтральный</option>
+            <option value="краткий, деловой">Деловой</option>
+            <option value="дружелюбный, понятный">Дружелюбный</option>
+            <option value="строгий, технический">Технический</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="task">Задача</label>
+        <textarea id="task" placeholder="Что должен сделать модель?"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="context">Контекст</label>
+        <textarea id="context" placeholder="Факты, аудитория, входные данные…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="constraints">Ограничения</label>
+        <textarea id="constraints" placeholder="Формат ответа, длина, чего избегать…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="format">Формат ответа</label>
+        <input id="format" type="text" placeholder="Список, таблица, JSON, markdown…" autocomplete="off" />
+      </div>
+
+      <div class="output-block">
+        <div class="output-toolbar">
+          <span class="output-label">Готовый промпт</span>
+          <div class="cta-row">
+            <button type="button" class="btn btn-ghost" id="rebuild">Пересобрать</button>
+            <button type="button" class="btn btn-signal" id="copy">Скопировать</button>
+          </div>
+        </div>
+        <textarea class="output" id="output" spellcheck="false" aria-label="Готовый промпт"></textarea>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p><strong>КУЗНЯ</strong> · инструмент для сборки промптов</p>
+  </footer>
+
+  <div class="toast" id="toast" role="status">Скопировано в буфер</div>
+
+  <script>
+    const fields = ["role", "tone", "task", "context", "constraints", "format"];
+    const els = Object.fromEntries(fields.map((id) => [id, document.getElementById(id)]));
+    const output = document.getElementById("output");
+    const toast = document.getElementById("toast");
+    const templatesEl = document.getElementById("templates");
+
+    const templates = [
+      {
+        id: "audit",
+        label: "Аудит промпта",
+        data: {
+          role: "старший промпт-инженер",
+          tone: "строгий, технический",
+          task: "Проведи аудит промпта: найди неоднозначности, пропущенные ограничения и риски галлюцинаций. Предложи улучшенную версию.",
+          context: "Промпт используется в продакшене для генерации ответов клиентской поддержки e-commerce.",
+          constraints: "Не переписывай без объяснений. Сначала диагноз, затем правки. Избегай общих советов.",
+          format: "1) Проблемы 2) Почему это важно 3) Улучшенный промпт",
+        },
+      },
+      {
+        id: "system",
+        label: "System prompt",
+        data: {
+          role: "надёжный ассистент продукта",
+          tone: "нейтральный, точный",
+          task: "Следуй системным правилам и отвечай только в рамках продукта. Если данных недостаточно — задай уточняющие вопросы.",
+          context: "Продукт: SaaS-аналитика. Пользователи — маркетологи без технического бэкграунда.",
+          constraints: "Не выдумывай метрики. Не обещай функций вне документации. Максимум 120 слов, если не просят иначе.",
+          format: "Короткий ответ + при необходимости список уточнений",
+        },
+      },
+      {
+        id: "rewrite",
+        label: "Рерайт",
+        data: {
+          role: "редактор UX-текстов",
+          tone: "краткий, деловой",
+          task: "Перепиши текст интерфейса так, чтобы он стал яснее и короче, сохранив смысл.",
+          context: "Язык: русский. Аудитория: новые пользователи мобильного приложения.",
+          constraints: "Без жаргона. Без восклицательных знаков. Не добавляй новых смыслов.",
+          format: "Исходный → новый вариант, построчно",
+        },
+      },
+    ];
+
+    function buildPrompt() {
+      const role = els.role.value.trim();
+      const tone = els.tone.value.trim();
+      const task = els.task.value.trim();
+      const context = els.context.value.trim();
+      const constraints = els.constraints.value.trim();
+      const format = els.format.value.trim();
+
+      const parts = [];
+      if (role) parts.push(`Роль: ${role}.`);
+      if (tone) parts.push(`Тон: ${tone}.`);
+      if (task) parts.push(`\nЗадача:\n${task}`);
+      if (context) parts.push(`\nКонтекст:\n${context}`);
+      if (constraints) parts.push(`\nОграничения:\n${constraints}`);
+      if (format) parts.push(`\nФормат ответа:\n${format}`);
+
+      return parts.join("\n").trim() || "Заполните поля выше — здесь появится промпт.";
+    }
+
+    function sync() {
+      output.value = buildPrompt();
+    }
+
+    function applyTemplate(tpl) {
+      Object.entries(tpl.data).forEach(([key, value]) => {
+        if (els[key]) els[key].value = value;
+      });
+      document.querySelectorAll(".chip").forEach((chip) => {
+        chip.classList.toggle("active", chip.dataset.id === tpl.id);
+      });
+      sync();
+    }
+
+    templates.forEach((tpl) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip";
+      btn.dataset.id = tpl.id;
+      btn.textContent = tpl.label;
+      btn.addEventListener("click", () => applyTemplate(tpl));
+      templatesEl.appendChild(btn);
+    });
+
+    fields.forEach((id) => {
+      els[id].addEventListener("input", sync);
+      els[id].addEventListener("change", sync);
+    });
+
+    document.getElementById("rebuild").addEventListener("click", sync);
+
+    document.getElementById("copy").addEventListener("click", async () => {
+      const text = output.value;
+      try {
+        await navigator.clipboard.writeText(text);
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1800);
+      } catch {
+        output.select();
+        document.execCommand("copy");
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1800);
+      }
+    });
+
+    document.getElementById("try-sample").addEventListener("click", (e) => {
+      e.preventDefault();
+      applyTemplate(templates[0]);
+      document.getElementById("workshop").scrollIntoView({ behavior: "smooth" });
+    });
+
+    sync();
+  </script>
+</body>
+</html>
