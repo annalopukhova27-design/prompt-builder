@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>КУЗНЯ — инструмент промпт-инженера</title>
+  <title>АннаСфера — инструмент промпт-инженера</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ink: #1a1f1c;
-      --ink-soft: #3d4740;
-      --mist: #e8ede9;
-      --paper: #f4f7f5;
-      --signal: #e85d04;
-      --signal-deep: #c44d03;
-      --teal: #0d7377;
-      --line: rgba(26, 31, 28, 0.12);
-      --glow: rgba(232, 93, 4, 0.18);
+      --ink: #1a1430;
+      --ink-soft: #4a4466;
+      --mist: #ebe8f8;
+      --paper: #f3f0ff;
+      --signal: #7c3aed;
+      --signal-deep: #6d28d9;
+      --accent: #3b82f6;
+      --line: rgba(26, 20, 48, 0.12);
+      --glow: rgba(124, 58, 237, 0.22);
     }
 
     * {
@@ -44,9 +44,10 @@
       inset: 0;
       z-index: -1;
       background:
-        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(13, 115, 119, 0.14), transparent 55%),
-        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(232, 93, 4, 0.1), transparent 50%),
-        linear-gradient(165deg, #eef2ef 0%, #e2e8e4 45%, #d8e0db 100%);
+        radial-gradient(ellipse 80% 50% at 10% 0%, rgba(59, 130, 246, 0.22), transparent 55%),
+        radial-gradient(ellipse 60% 45% at 90% 8%, rgba(124, 58, 237, 0.2), transparent 50%),
+        radial-gradient(ellipse 50% 40% at 50% 100%, rgba(99, 102, 241, 0.12), transparent 55%),
+        linear-gradient(165deg, #eef0ff 0%, #e4e0fb 45%, #d8d4f5 100%);
     }
 
     .atmosphere::after {
@@ -54,8 +55,8 @@
       position: absolute;
       inset: 0;
       background-image:
-        linear-gradient(rgba(26, 31, 28, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(26, 31, 28, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(91, 70, 180, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(91, 70, 180, 0.05) 1px, transparent 1px);
       background-size: 48px 48px;
       mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
       pointer-events: none;
@@ -84,8 +85,7 @@
       font-family: "Archivo", sans-serif;
       font-weight: 800;
       font-size: 1.15rem;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
+      letter-spacing: -0.01em;
     }
 
     .brand span {
@@ -126,16 +126,18 @@
     .hero-brand {
       font-family: "Archivo", sans-serif;
       font-weight: 800;
-      font-size: clamp(3.5rem, 12vw, 7.5rem);
-      line-height: 0.9;
-      letter-spacing: -0.03em;
-      text-transform: uppercase;
+      font-size: clamp(2.6rem, 9vw, 5.75rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
       margin-bottom: 1.25rem;
     }
 
     .hero-brand em {
       font-style: normal;
-      color: var(--signal);
+      background: linear-gradient(120deg, var(--accent), var(--signal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
     }
 
     .hero-title {
@@ -185,8 +187,8 @@
     }
 
     .btn-primary:hover {
-      background: #000;
-      box-shadow: 0 8px 28px rgba(26, 31, 28, 0.2);
+      background: #120c28;
+      box-shadow: 0 8px 28px rgba(59, 130, 246, 0.25);
     }
 
     .btn-ghost {
@@ -196,7 +198,7 @@
     }
 
     .btn-ghost:hover {
-      background: rgba(26, 31, 28, 0.05);
+      background: rgba(124, 58, 237, 0.08);
     }
 
     .btn-signal {
@@ -224,7 +226,7 @@
     .hero-visual svg {
       width: 100%;
       height: 100%;
-      filter: drop-shadow(0 24px 48px rgba(13, 115, 119, 0.2));
+      filter: drop-shadow(0 24px 48px rgba(124, 58, 237, 0.28));
     }
 
     @keyframes rise {
@@ -301,7 +303,7 @@
       font-weight: 500;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--teal);
+      color: var(--accent);
     }
 
     .field input,
@@ -328,8 +330,8 @@
     .field input:focus,
     .field textarea:focus,
     .field select:focus {
-      border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.15);
+      border-color: var(--signal);
+      box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.18);
     }
 
     .grid-2 {
@@ -370,7 +372,7 @@
     .chip.active {
       border-color: var(--signal);
       color: var(--ink);
-      background: rgba(232, 93, 4, 0.08);
+      background: rgba(124, 58, 237, 0.1);
     }
 
     .output-block {
@@ -393,7 +395,7 @@
       font-size: 0.75rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
-      color: var(--teal);
+      color: var(--accent);
     }
 
     .output {
@@ -402,7 +404,7 @@
       line-height: 1.65;
       white-space: pre-wrap;
       background: var(--ink);
-      color: #d4ddd6;
+      color: #d4d0f0;
       padding: 1.25rem 1.35rem;
       min-height: 180px;
       border: none;
@@ -474,13 +476,13 @@
 
   <header class="hero">
     <nav class="nav">
-      <div class="brand">Ку<span>зня</span></div>
+      <div class="brand">Анна<span>Сфера</span></div>
       <a class="nav-link" href="#workshop">К редактору ↓</a>
     </nav>
 
     <div class="hero-stage">
       <div class="hero-copy">
-        <p class="hero-brand">Ку<em>зня</em></p>
+        <p class="hero-brand">Анна<em>Сфера</em></p>
         <h1 class="hero-title">Собирайте точные промпты без хаоса</h1>
         <p class="hero-lead">Рабочее место промпт-инженера: роль, задача, ограничения — и готовый текст.</p>
         <div class="cta-row">
@@ -491,17 +493,17 @@
 
       <div class="hero-visual" aria-hidden="true">
         <svg viewBox="0 0 640 640" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle class="ring-pulse" cx="320" cy="320" r="210" stroke="#0d7377" stroke-width="1.5" opacity="0.4" />
-          <circle cx="320" cy="320" r="160" stroke="#1a1f1c" stroke-width="2" opacity="0.15" />
-          <path d="M180 420 L320 160 L460 420 Z" stroke="#1a1f1c" stroke-width="2.5" fill="rgba(232,93,4,0.12)" />
-          <path d="M240 380 L320 230 L400 380 Z" stroke="#0d7377" stroke-width="2" fill="rgba(13,115,119,0.18)" />
-          <circle cx="320" cy="320" r="18" fill="#e85d04" />
-          <circle cx="320" cy="160" r="8" fill="#1a1f1c" />
-          <circle cx="180" cy="420" r="8" fill="#1a1f1c" />
-          <circle cx="460" cy="420" r="8" fill="#1a1f1c" />
-          <line x1="320" y1="178" x2="320" y2="302" stroke="#e85d04" stroke-width="2" stroke-dasharray="6 8" />
-          <rect x="268" y="455" width="104" height="28" rx="2" fill="#1a1f1c" opacity="0.85" />
-          <text x="320" y="474" text-anchor="middle" fill="#f4f7f5" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="2">PROMPT</text>
+          <circle class="ring-pulse" cx="320" cy="320" r="210" stroke="#3b82f6" stroke-width="1.5" opacity="0.45" />
+          <circle cx="320" cy="320" r="160" stroke="#1a1430" stroke-width="2" opacity="0.15" />
+          <path d="M180 420 L320 160 L460 420 Z" stroke="#1a1430" stroke-width="2.5" fill="rgba(124,58,237,0.14)" />
+          <path d="M240 380 L320 230 L400 380 Z" stroke="#3b82f6" stroke-width="2" fill="rgba(59,130,246,0.2)" />
+          <circle cx="320" cy="320" r="18" fill="#7c3aed" />
+          <circle cx="320" cy="160" r="8" fill="#1a1430" />
+          <circle cx="180" cy="420" r="8" fill="#1a1430" />
+          <circle cx="460" cy="420" r="8" fill="#1a1430" />
+          <line x1="320" y1="178" x2="320" y2="302" stroke="#7c3aed" stroke-width="2" stroke-dasharray="6 8" />
+          <rect x="268" y="455" width="104" height="28" rx="2" fill="#1a1430" opacity="0.9" />
+          <text x="320" y="474" text-anchor="middle" fill="#f3f0ff" font-family="IBM Plex Mono, monospace" font-size="11" letter-spacing="2">PROMPT</text>
         </svg>
       </div>
     </div>
@@ -569,7 +571,7 @@
   </main>
 
   <footer>
-    <p><strong>КУЗНЯ</strong> · инструмент для сборки промптов</p>
+    <p><strong>АннаСфера</strong> · инструмент для сборки промптов</p>
   </footer>
 
   <div class="toast" id="toast" role="status">Скопировано в буфер</div>
