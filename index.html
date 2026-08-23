@@ -3,7 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>АннаСфера — инструмент промпт-инженера</title>
+  <title>Конструктор промптов — АннаСфера</title>
+  <meta name="description" content="Простой онлайн-конструктор структурированных промптов для ChatGPT, изображений, видео, экспертных задач и вайбкодинга." />
+  <meta property="og:title" content="Конструктор промптов — АннаСфера" />
+  <meta property="og:description" content="Простой онлайн-конструктор структурированных промптов для ChatGPT, изображений, видео, экспертных задач и вайбкодинга." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://annalopukhova27-design.github.io/test/" />
+  <link rel="icon" href="images/favicon.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -106,6 +112,12 @@
       border-color: var(--ink);
     }
 
+    .nav-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+      border-color: transparent;
+    }
+
     .hero-stage {
       display: grid;
       align-items: end;
@@ -152,8 +164,17 @@
     .hero-lead {
       color: var(--ink-soft);
       font-size: 1.05rem;
-      margin-bottom: 1.75rem;
+      margin-bottom: 0.65rem;
       max-width: 32ch;
+    }
+
+    .hero-sublead {
+      color: var(--ink-soft);
+      font-size: 0.9rem;
+      line-height: 1.45;
+      margin-bottom: 1.75rem;
+      max-width: 40ch;
+      opacity: 0.85;
     }
 
     .cta-row {
@@ -367,28 +388,34 @@
     }
 
     .templates {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 0.65rem;
       margin-bottom: 0.25rem;
     }
 
     .chip {
       font-family: "IBM Plex Mono", monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.04em;
-      padding: 0.45rem 0.75rem;
-      background: transparent;
+      font-size: 0.76rem;
+      letter-spacing: 0.02em;
+      line-height: 1.35;
+      padding: 0.75rem 0.9rem;
+      min-height: 44px;
+      background: rgba(255, 255, 255, 0.62);
       border: 1.5px solid var(--line);
+      border-radius: 4px;
       color: var(--ink-soft);
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
+      text-align: left;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s, transform 0.2s;
     }
 
     .chip:hover {
       border-color: var(--signal);
       color: var(--ink);
-      background: rgba(124, 58, 237, 0.08);
+      background: rgba(255, 255, 255, 0.88);
+      box-shadow: 0 4px 14px rgba(124, 58, 237, 0.12);
+      transform: translateY(-1px);
     }
 
     .chip:focus-visible {
@@ -399,8 +426,9 @@
     .chip.active {
       border-color: var(--signal);
       color: var(--ink);
-      background: rgba(124, 58, 237, 0.16);
-      box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.25);
+      background: rgba(124, 58, 237, 0.14);
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.22), 0 4px 14px rgba(124, 58, 237, 0.14);
+      transform: translateY(-1px);
     }
 
     .field-error {
@@ -451,6 +479,19 @@
       color: var(--accent);
     }
 
+    .output-hint {
+      font-size: 0.88rem;
+      color: var(--ink-soft);
+      margin-bottom: 0.75rem;
+      line-height: 1.45;
+    }
+
+    .output-head {
+      display: grid;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+
     .output {
       font-family: "IBM Plex Mono", monospace;
       font-size: 0.88rem;
@@ -465,9 +506,13 @@
       resize: vertical;
     }
 
-    .output:focus {
+    .output:focus-visible {
       outline: 2px solid var(--signal);
       outline-offset: 2px;
+    }
+
+    .output::placeholder {
+      color: rgba(212, 208, 240, 0.45);
     }
 
     .toast {
@@ -530,6 +575,10 @@
         padding: 0 1rem 3rem;
       }
 
+      .hero-sublead {
+        max-width: none;
+      }
+
       .workshop {
         padding: 3.5rem 1rem 4rem;
       }
@@ -541,25 +590,74 @@
 
       .output-toolbar .cta-row {
         width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+      }
+
+      .output-toolbar .btn-clear {
+        grid-column: 1 / -1;
       }
 
       .output-toolbar .btn {
-        flex: 1 1 auto;
         min-width: 0;
+        width: 100%;
       }
 
       .templates {
-        gap: 0.4rem;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
       }
 
       .chip {
-        font-size: 0.68rem;
+        min-height: 48px;
+        font-size: 0.74rem;
       }
 
       .output {
         font-size: 0.82rem;
         padding: 1rem;
         min-height: 160px;
+      }
+    }
+
+    @media (max-width: 375px) {
+      .hero-brand {
+        font-size: clamp(2.2rem, 11vw, 3rem);
+      }
+
+      .hero-title {
+        max-width: none;
+      }
+
+      .templates {
+        grid-template-columns: 1fr;
+      }
+
+      .chip {
+        min-height: 48px;
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (max-width: 320px) {
+      .nav {
+        padding: 0.75rem;
+      }
+
+      .hero-stage,
+      .workshop {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+
+      .btn {
+        font-size: 0.88rem;
+        padding: 0.75rem 1rem;
+      }
+
+      .output-toolbar .cta-row {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -593,6 +691,7 @@
         <p class="hero-brand">Анна<em>Сфера</em></p>
         <h1 class="hero-title">Собирайте точные промпты без хаоса</h1>
         <p class="hero-lead">Рабочее место промпт-инженера: роль, задача, ограничения — и готовый текст.</p>
+        <p class="hero-sublead">Подходит для ChatGPT, Midjourney, Kling, Cursor и других AI-инструментов.</p>
         <div class="cta-row">
           <a class="btn btn-primary" href="#workshop">Открыть мастерскую</a>
           <a class="btn btn-ghost" href="#workshop" id="try-sample">Вставить пример</a>
@@ -625,8 +724,8 @@
 
     <div class="builder">
       <div class="field">
-        <label>Шаблоны</label>
-        <div class="templates" id="templates" role="group" aria-label="Шаблоны промптов"></div>
+        <label id="templates-label">Шаблоны</label>
+        <div class="templates" id="templates" role="group" aria-labelledby="templates-label"></div>
       </div>
 
       <div class="grid-2">
@@ -668,14 +767,24 @@
 
       <div class="output-block">
         <div class="output-toolbar">
-          <span class="output-label">Готовый промпт</span>
+          <div class="output-head">
+            <span class="output-label" id="output-label">Готовый промпт</span>
+            <p class="output-hint" id="output-hint">Готовый текст можно отредактировать вручную перед копированием.</p>
+          </div>
           <div class="cta-row">
-            <button type="button" class="btn btn-clear" id="clear">Очистить</button>
             <button type="button" class="btn btn-ghost" id="rebuild">Пересобрать</button>
             <button type="button" class="btn btn-signal" id="copy">Скопировать</button>
+            <button type="button" class="btn btn-clear" id="clear">Очистить</button>
           </div>
         </div>
-        <textarea class="output" id="output" spellcheck="false" aria-label="Готовый промпт"></textarea>
+        <textarea
+          class="output"
+          id="output"
+          spellcheck="false"
+          aria-labelledby="output-label"
+          aria-describedby="output-hint"
+          placeholder="Здесь появится собранный промпт. Вы можете отредактировать текст перед копированием."
+        ></textarea>
       </div>
     </div>
   </main>
@@ -809,7 +918,10 @@
 
     function clearActiveTemplate() {
       activeTemplateId = null;
-      document.querySelectorAll(".chip").forEach((chip) => chip.classList.remove("active"));
+      document.querySelectorAll(".chip").forEach((chip) => {
+        chip.classList.remove("active");
+        chip.setAttribute("aria-pressed", "false");
+      });
     }
 
     function applyTemplate(tpl) {
@@ -818,7 +930,9 @@
       });
       activeTemplateId = tpl.id;
       document.querySelectorAll(".chip").forEach((chip) => {
-        chip.classList.toggle("active", chip.dataset.id === tpl.id);
+        const isActive = chip.dataset.id === tpl.id;
+        chip.classList.toggle("active", isActive);
+        chip.setAttribute("aria-pressed", isActive ? "true" : "false");
       });
       setTaskError(false);
       rebuildPrompt();
@@ -862,6 +976,8 @@
       btn.className = "chip";
       btn.dataset.id = tpl.id;
       btn.textContent = tpl.label;
+      btn.setAttribute("aria-pressed", "false");
+      btn.setAttribute("aria-label", `Шаблон: ${tpl.label}`);
       btn.addEventListener("click", () => applyTemplate(tpl));
       templatesEl.appendChild(btn);
     });
