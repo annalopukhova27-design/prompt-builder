@@ -174,7 +174,12 @@
       border: none;
       cursor: pointer;
       text-decoration: none;
-      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s, border-color 0.2s;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     .btn:active {
@@ -209,6 +214,18 @@
     .btn-signal:hover {
       background: var(--signal-deep);
       box-shadow: 0 8px 28px var(--glow);
+    }
+
+    .btn-clear {
+      background: transparent;
+      color: var(--ink-soft);
+      border: 1.5px solid var(--line);
+    }
+
+    .btn-clear:hover {
+      color: var(--ink);
+      border-color: var(--ink-soft);
+      background: rgba(26, 20, 48, 0.04);
     }
 
     /* Dominant visual plane */
@@ -339,7 +356,7 @@
       gap: 1.25rem;
     }
 
-    @media (min-width: 720px) {
+    @media (min-width: 769px) {
       .grid-2 {
         grid-template-columns: 1fr 1fr;
       }
@@ -365,14 +382,50 @@
       border: 1.5px solid var(--line);
       color: var(--ink-soft);
       cursor: pointer;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, box-shadow 0.2s;
     }
 
-    .chip:hover,
+    .chip:hover {
+      border-color: var(--signal);
+      color: var(--ink);
+      background: rgba(124, 58, 237, 0.08);
+    }
+
+    .chip:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
     .chip.active {
       border-color: var(--signal);
       color: var(--ink);
-      background: rgba(124, 58, 237, 0.1);
+      background: rgba(124, 58, 237, 0.16);
+      box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.25);
+    }
+
+    .field-error {
+      font-size: 0.88rem;
+      color: #b42318;
+      background: rgba(180, 35, 24, 0.08);
+      border: 1px solid rgba(180, 35, 24, 0.2);
+      padding: 0.65rem 0.85rem;
+      border-radius: 2px;
+      display: none;
+    }
+
+    .field-error.visible {
+      display: block;
+      animation: rise 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .field.has-error textarea,
+    .field.has-error input {
+      border-color: rgba(180, 35, 24, 0.45);
+    }
+
+    .field.has-error textarea:focus,
+    .field.has-error input:focus {
+      box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.15);
     }
 
     .output-block {
@@ -428,12 +481,21 @@
       font-weight: 500;
       padding: 0.75rem 1.25rem;
       z-index: 50;
-      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      max-width: calc(100vw - 2rem);
+      text-align: center;
+      opacity: 0;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
       pointer-events: none;
     }
 
     .toast.show {
       transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: #7f1d1d;
+      color: #fef2f2;
     }
 
     footer {
@@ -459,6 +521,48 @@
       }
     }
 
+    @media (max-width: 768px) {
+      .nav {
+        padding: 1rem;
+      }
+
+      .hero-stage {
+        padding: 0 1rem 3rem;
+      }
+
+      .workshop {
+        padding: 3.5rem 1rem 4rem;
+      }
+
+      .output-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .output-toolbar .cta-row {
+        width: 100%;
+      }
+
+      .output-toolbar .btn {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+
+      .templates {
+        gap: 0.4rem;
+      }
+
+      .chip {
+        font-size: 0.68rem;
+      }
+
+      .output {
+        font-size: 0.82rem;
+        padding: 1rem;
+        min-height: 160px;
+      }
+    }
+
     @media (max-width: 520px) {
       .hero-visual {
         display: none;
@@ -467,6 +571,10 @@
       .hero-stage {
         align-items: center;
         padding-bottom: 4rem;
+      }
+
+      .cta-row .btn {
+        width: 100%;
       }
     }
   </style>
@@ -537,9 +645,10 @@
         </div>
       </div>
 
-      <div class="field">
+      <div class="field" id="task-field">
         <label for="task">Задача</label>
-        <textarea id="task" placeholder="Что должен сделать модель?"></textarea>
+        <textarea id="task" placeholder="Что должен сделать модель?" aria-describedby="task-error"></textarea>
+        <p class="field-error" id="task-error" role="alert">Опишите задачу, для которой нужно создать промпт</p>
       </div>
 
       <div class="field">
@@ -561,6 +670,7 @@
         <div class="output-toolbar">
           <span class="output-label">Готовый промпт</span>
           <div class="cta-row">
+            <button type="button" class="btn btn-clear" id="clear">Очистить</button>
             <button type="button" class="btn btn-ghost" id="rebuild">Пересобрать</button>
             <button type="button" class="btn btn-signal" id="copy">Скопировать</button>
           </div>
@@ -574,7 +684,7 @@
     <p><strong>АннаСфера</strong> · инструмент для сборки промптов</p>
   </footer>
 
-  <div class="toast" id="toast" role="status">Скопировано в буфер</div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
     const fields = ["role", "tone", "task", "context", "constraints", "format"];
@@ -582,77 +692,168 @@
     const output = document.getElementById("output");
     const toast = document.getElementById("toast");
     const templatesEl = document.getElementById("templates");
+    const taskField = document.getElementById("task-field");
+    const taskError = document.getElementById("task-error");
+
+    let activeTemplateId = null;
+    let toastTimer = null;
 
     const templates = [
       {
-        id: "audit",
-        label: "Аудит промпта",
+        id: "social",
+        label: "Пост для соцсетей",
         data: {
-          role: "старший промпт-инженер",
+          role: "SMM-специалист и копирайтер",
+          tone: "дружелюбный, понятный",
+          task: "Напиши пост для Instagram о запуске онлайн-курса по продуктивности. Пост должен заинтересовать аудиторию и мягко подвести к записи.",
+          context: "Курс для фрилансеров и удалёнщиков. Целевая аудитория — 25–35 лет. Курс стартует через неделю, есть ранняя скидка 20%.",
+          constraints: "Длина: 800–1000 символов. Без клише «уникальный» и «революционный». Добавь 1 призыв к действию и 5–7 релевантных хэштегов.",
+          format: "Заголовок-крючок, основной текст, CTA, хэштеги отдельной строкой",
+        },
+      },
+      {
+        id: "image",
+        label: "Промпт для изображения",
+        data: {
+          role: "промпт-инженер для генерации изображений",
           tone: "строгий, технический",
-          task: "Проведи аудит промпта: найди неоднозначности, пропущенные ограничения и риски галлюцинаций. Предложи улучшенную версию.",
-          context: "Промпт используется в продакшене для генерации ответов клиентской поддержки e-commerce.",
-          constraints: "Не переписывай без объяснений. Сначала диагноз, затем правки. Избегай общих советов.",
-          format: "1) Проблемы 2) Почему это важно 3) Улучшенный промпт",
+          task: "Сформулируй детальный промпт для генерации изображения: уютное домашнее рабочее место программиста в стиле lo-fi.",
+          context: "Изображение для обложки Telegram-канала о продуктивности. Нужен спокойный, вдохновляющий визуал без людей в кадре.",
+          constraints: "Укажи стиль, освещение, ракурс, палитру и настроение. Избегай размытых формулировок. Без текста на изображении.",
+          format: "Один связный промпт на английском, до 120 слов, с запятыми между дескрипторами",
         },
       },
       {
-        id: "system",
-        label: "System prompt",
+        id: "video",
+        label: "Промпт для видео",
         data: {
-          role: "надёжный ассистент продукта",
-          tone: "нейтральный, точный",
-          task: "Следуй системным правилам и отвечай только в рамках продукта. Если данных недостаточно — задай уточняющие вопросы.",
-          context: "Продукт: SaaS-аналитика. Пользователи — маркетологи без технического бэкграунда.",
-          constraints: "Не выдумывай метрики. Не обещай функций вне документации. Максимум 120 слов, если не просят иначе.",
-          format: "Короткий ответ + при необходимости список уточнений",
-        },
-      },
-      {
-        id: "rewrite",
-        label: "Рерайт",
-        data: {
-          role: "редактор UX-текстов",
+          role: "режиссёр коротких вертикальных видео",
           tone: "краткий, деловой",
-          task: "Перепиши текст интерфейса так, чтобы он стал яснее и короче, сохранив смысл.",
-          context: "Язык: русский. Аудитория: новые пользователи мобильного приложения.",
-          constraints: "Без жаргона. Без восклицательных знаков. Не добавляй новых смыслов.",
-          format: "Исходный → новый вариант, построчно",
+          task: "Создай промпт для 15-секундного Reels о том, как за 3 шага навести порядок на рабочем столе.",
+          context: "Бренд минималистичных аксессуаров для дома. Аудитория — молодые профессионалы. Видео должно выглядеть аккуратно и современно.",
+          constraints: "3 чётких шага. Динамичный монтаж. Без закадрового голоса — только текст на экране. Укажи ракурсы и переходы.",
+          format: "По секундам: 0–5 / 5–10 / 10–15 с описанием кадра, текста на экране и действия",
+        },
+      },
+      {
+        id: "expert",
+        label: "Экспертный ответ",
+        data: {
+          role: "эксперт по цифровому маркетингу с 10-летним опытом",
+          tone: "нейтральный, точный",
+          task: "Проанализируй, стоит ли малому бизнесу инвестировать в контекстную рекламу на старте, или лучше начать с органического трафика.",
+          context: "Ниша: локальная кофейня в городе 300 тыс. человек. Бюджет на маркетинг — 30 000 ₽/мес. Команда из 2 человек, сайта пока нет.",
+          constraints: "Опирайся на логику, не выдумывай статистику. Укажи риски и альтернативы. Если данных не хватает — перечисли, что уточнить.",
+          format: "Краткий вывод → аргументы «за» и «против» → пошаговый план на первый месяц",
+        },
+      },
+      {
+        id: "vibecoding",
+        label: "Вайбкодинг",
+        data: {
+          role: "опытный fullstack-разработчик и наставник",
+          tone: "дружелюбный, понятный",
+          task: "Помоги создать одностраничное приложение «Трекер привычек» на чистом HTML, CSS и JavaScript без фреймворков.",
+          context: "Я начинающий разработчик. Хочу минималистичный интерфейс, тёмную тему и сохранение данных в localStorage.",
+          constraints: "Код должен быть простым и читаемым. Комментарии только там, где логика неочевидна. Без внешних библиотек.",
+          format: "Сначала краткий план, затем полный код по файлам: index.html, style.css, script.js",
         },
       },
     ];
 
+    const demoSample = {
+      role: "ассистент по подготовке контента",
+      tone: "нейтральный, точный",
+      task: "Составь структурированный промпт для генерации статьи о пользе утренних прогулок для продуктивности.",
+      context: "Статья для блога о work-life balance. Аудитория — офисные сотрудники 28–40 лет. Объём статьи — около 1500 слов.",
+      constraints: "Тон спокойный и мотивирующий, без медицинских утверждений без оговорок. Добавь практические советы, которые можно применить сразу.",
+      format: "Заголовок, вступление, 3–4 раздела с подзаголовками, краткое заключение с призывом к действию",
+    };
+
     function buildPrompt() {
       const role = els.role.value.trim();
-      const tone = els.tone.value.trim();
       const task = els.task.value.trim();
       const context = els.context.value.trim();
+      const tone = els.tone.value.trim();
       const constraints = els.constraints.value.trim();
       const format = els.format.value.trim();
 
       const parts = [];
-      if (role) parts.push(`Роль: ${role}.`);
-      if (tone) parts.push(`Тон: ${tone}.`);
-      if (task) parts.push(`\nЗадача:\n${task}`);
-      if (context) parts.push(`\nКонтекст:\n${context}`);
-      if (constraints) parts.push(`\nОграничения:\n${constraints}`);
-      if (format) parts.push(`\nФормат ответа:\n${format}`);
+      if (role) parts.push(`Роль:\n${role}`);
+      if (task) parts.push(`Задача:\n${task}`);
+      if (context) parts.push(`Контекст:\n${context}`);
+      if (tone) parts.push(`Тон:\n${tone}`);
+      if (constraints) parts.push(`Ограничения:\n${constraints}`);
+      if (format) parts.push(`Формат ответа:\n${format}`);
 
-      return parts.join("\n").trim() || "Заполните поля выше — здесь появится промпт.";
+      return parts.join("\n\n");
     }
 
-    function sync() {
+    function setTaskError(visible) {
+      taskField.classList.toggle("has-error", visible);
+      taskError.classList.toggle("visible", visible);
+    }
+
+    function rebuildPrompt() {
+      if (!els.task.value.trim()) {
+        setTaskError(true);
+        output.value = "";
+        els.task.focus();
+        return false;
+      }
+
+      setTaskError(false);
       output.value = buildPrompt();
+      return true;
+    }
+
+    function clearActiveTemplate() {
+      activeTemplateId = null;
+      document.querySelectorAll(".chip").forEach((chip) => chip.classList.remove("active"));
     }
 
     function applyTemplate(tpl) {
       Object.entries(tpl.data).forEach(([key, value]) => {
         if (els[key]) els[key].value = value;
       });
+      activeTemplateId = tpl.id;
       document.querySelectorAll(".chip").forEach((chip) => {
         chip.classList.toggle("active", chip.dataset.id === tpl.id);
       });
-      sync();
+      setTaskError(false);
+      rebuildPrompt();
+    }
+
+    function applyDemoSample() {
+      clearActiveTemplate();
+      Object.entries(demoSample).forEach(([key, value]) => {
+        if (els[key]) els[key].value = value;
+      });
+      setTaskError(false);
+      rebuildPrompt();
+    }
+
+    function clearForm() {
+      fields.forEach((id) => {
+        if (els[id].tagName === "SELECT") {
+          els[id].selectedIndex = 0;
+        } else {
+          els[id].value = "";
+        }
+      });
+      output.value = "";
+      setTaskError(false);
+      clearActiveTemplate();
+    }
+
+    function showToast(message, isError = false) {
+      if (toastTimer) clearTimeout(toastTimer);
+      toast.textContent = message;
+      toast.classList.toggle("error", isError);
+      toast.classList.add("show");
+      toastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 2200);
     }
 
     templates.forEach((tpl) => {
@@ -665,34 +866,46 @@
       templatesEl.appendChild(btn);
     });
 
-    fields.forEach((id) => {
-      els[id].addEventListener("input", sync);
-      els[id].addEventListener("change", sync);
+    els.task.addEventListener("input", () => {
+      if (els.task.value.trim()) setTaskError(false);
     });
 
-    document.getElementById("rebuild").addEventListener("click", sync);
+    document.getElementById("rebuild").addEventListener("click", rebuildPrompt);
+
+    document.getElementById("clear").addEventListener("click", clearForm);
 
     document.getElementById("copy").addEventListener("click", async () => {
-      const text = output.value;
+      const text = output.value.trim();
+      if (!text) {
+        if (!els.task.value.trim()) {
+          setTaskError(true);
+          els.task.focus();
+        } else {
+          showToast("Сначала соберите промпт кнопкой «Пересобрать»", true);
+        }
+        return;
+      }
+
       try {
-        await navigator.clipboard.writeText(text);
-        toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 1800);
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          output.focus();
+          output.select();
+          const copied = document.execCommand("copy");
+          if (!copied) throw new Error("copy failed");
+        }
+        showToast("Промпт скопирован");
       } catch {
-        output.select();
-        document.execCommand("copy");
-        toast.classList.add("show");
-        setTimeout(() => toast.classList.remove("show"), 1800);
+        showToast("Не удалось скопировать. Выделите текст вручную.", true);
       }
     });
 
     document.getElementById("try-sample").addEventListener("click", (e) => {
       e.preventDefault();
-      applyTemplate(templates[0]);
+      applyDemoSample();
       document.getElementById("workshop").scrollIntoView({ behavior: "smooth" });
     });
-
-    sync();
   </script>
 </body>
 </html>
